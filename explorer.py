@@ -36,13 +36,19 @@ def lba2addr(lba):
 	s,h,c = sch(lba)
 	return ((s - 1)  + h * 63 + c * 63 * 65535) * 512
 
-def add_lba(lba, num):
-	s = (lba & 0xff) + num
-	c = ((lba & 0xffff00) >> 8) + s // 64
-	s -= s // 64 * 64
-	h = ((lba & 0xff000000) >> 24) + c // 65536
-	c -= c // 65536 * 65536
-	return s | (c << 8) | (h << 24)
+
+def guid2num(guid):
+	d1 = (guid & 0xff) << 24 | (guid >> 8 & 0xff) << 16 | (guid >> 16 & 0xff) << 8 | (guid >> 24 & 0xff)
+	guid = guid >> 32
+	d2 = (guid & 0xff) << 8 | (guid >> 8 & 0xff)
+	guid = guid >> 16
+	d3 = (guid & 0xff) << 8 | (guid >> 8 & 0xff)
+	guid = guid >> 16
+	d4 = (guid & 0xff) << 8 | (guid >> 8 & 0xff)
+	guid = guid >> 16
+	d5 = (guid & 0xff) << 40 | (guid >> 8 & 0xff) << 32 | (guid << 16 & 0xff) << 24 | (guid >> 24 & 0xff) << 16 | (guid >> 32 & 0xff) << 8 | (guid >> 40 & 0xff)
+
+	return d1 << 56 | d2 << 24 | d3 << 16 | d4 << 8 | d5
 
 
 def get_next_free_sector(start, end):
@@ -360,9 +366,6 @@ def remove_file(name, fst):
 			fst += 512
 
 
-my_guid = 0xec91e6b2782e415185799aaae1547431
-
-
 file_name = ''
 
 if len(sys.argv) > 1:
@@ -388,7 +391,7 @@ for i in range(sections_count):
 	for j in range(16):
 		sguid |= data[1024 + i * 0x80 + j] << (j * 8)
 	
-	if sguid == my_guid + 2:
+	if sguid == guid2num(0xff3ab5f74a004566b72167570e1c7604):
 		soffset = 0
 		for j in range(8):
 			soffset |= data[1024 + i * 0x80 + 0x20 + j] << (j * 8)

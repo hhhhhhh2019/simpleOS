@@ -3,84 +3,85 @@
 
 ; int from, int to, int count
 memcpy:
-	push ebp
-	push ecx
-	push esi
-	push ebx
+	push rbp
+	mov rbp, rsp
+	add rbp, 8 * 2
+	push rbx
+	push rcx
+	push rdx
 
-	mov ebp, esp
+	mov rcx, [rbp + 8 * 2] ; count
+	mov rbx, [rbp + 8 * 0] ; from
+	mov rdx, [rbp + 8 * 1] ; to
 
-	mov esi, [ebp + 5 * 4 + 4 * 0] ; from
-	push dword [ebp + 5 * 4 + 4 * 1] ; to
-	mov ecx, 0 ; count
+.loop: 
+	mov al, [rbx]
+	mov byte [rdx], al
 
-	pop ebp
+	inc rdx
+	inc rbx
 
-memcpy_loop:
-	cmp ecx, [ebp + 5 * 4 + 4 * 2]
-	je memcpy_end
+	dec rcx
 
-	mov ebx, [esi + ecx]
+	cmp rcx, 0
+	jg .loop
 
-	mov [ebp + ecx], ebx
 
-	inc ecx
-jmp memcpy_loop
-
-memcpy_end:
-	pop ebx
-	pop esi
-	pop ecx
-	pop ebp
+	pop rdx
+	pop rcx
+	pop rbx
+	pop rbp
 ret
 
 
 ; *mem, char value, int count
 memset:
-	push ecx
-	push ebp
-	push ebx
+	push rcx
+	push rbp
+	push rbx
 
-	mov ebp, [esp + 4 * 4 + 4 * 0]
-	mov ebx, [esp + 4 * 4 + 4 * 1]
-	mov ecx, [esp + 4 * 4 + 4 * 2]
+	mov rbp, [rsp + 8 * 4 + 8 * 0]
+	mov rbx, [rsp + 8 * 4 + 8 * 1]
+	mov rcx, [rsp + 8 * 4 + 8 * 2]
 
 
 .loop:
-	mov [ebp], bl
-	inc ebp
-	dec ecx
+	mov [rbp], bl
+	inc rbp
+	dec rcx
 
-	cmp ecx, 0
+	cmp rcx, 0
 	jne .loop
 	
-	pop ebx
-	pop ebp
-	pop ecx
+	pop rbx
+	pop rbp
+	pop rcx
 ret
 
 ; *mem, int16 value, int count
 memset_word:
-	push ecx
-	push ebp
-	push ebx
+	push rbp
+	mov rbp, rsp
+	add rbp, 8 * 2
+	push rbx
+	push rcx
 
-	mov ebp, [esp + 4 * 4 + 4 * 0]
-	mov ebx, [esp + 4 * 4 + 4 * 1]
-	mov ecx, [esp + 4 * 4 + 4 * 2]
-
+	mov rcx, [rbp + 8 * 2] ; count
+	mov rbx, [rbp + 8 * 1] ; value
+	mov rbp, [rbp + 8 * 0] ; mem
 
 .loop:
-	mov [ebp], bx
-	add ebp, 2
-	dec ecx
+	mov word [rbp], bx
 
-	cmp ecx, 0
+	add rbp, 2
+	dec rcx
+
+	cmp rcx, 0
 	jne .loop
-	
-	pop ebx
-	pop ebp
-	pop ecx
+
+	pop rcx
+	pop rbx
+	pop rbp
 ret
 
 %endif

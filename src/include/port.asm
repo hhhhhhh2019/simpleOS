@@ -1,75 +1,72 @@
 %ifndef PORT
 %define PORT
 
-%define REG_SCREEN_CTRL 0x3d4
-%define REG_SCREEN_DATA 0x3d5
-
 ; int port
 get_port_byte:
-	push ebp
-	push edx
+	push rbp
+	push rdx
 
-	mov ebp, esp
+	mov rbp, rsp
 
-	mov dx, [ebp + 3 * 4 + 0] ; port
-	mov eax, 0
+	mov dx, [rbp + 8 * 3] ; port
+	mov rax, 0
 
 	in al, dx
 
-	pop edx
-	pop ebp
+	pop rdx
+	pop rbp
 ret
 
 ; int port, int data
 set_port_byte:
-	push ebp
-	push edx
+	push rbp
+	push rdx
 
-	mov ebp, esp
+	mov rbp, rsp
 
-	mov eax, 0
+	mov rax, 0
 
-	mov edx, [ebp + 3 * 4 + 0 * 4] ; port
-	mov eax, [ebp + 3 * 4 + 1 * 4] ; data
+	mov dx, [rbp + 8 * 3 + 8 * 0] ; port
+	mov ax, [rbp + 8 * 3 + 8 * 1] ; data
 
-	out dx, ax
+	out dx, al
 
-	pop edx
-	pop ebp
+	pop rdx
+	pop rbp
 ret
 
 ; int port
 get_port_word:
-	push ebp
-	push edx
+	push rbp
+	push rdx
 
-	mov ebp, esp
+	mov rbp, rsp
 
-	mov dx, [ebp + 3 * 4 + 0] ; port
-	mov eax, 0
+	mov rdx, [rbp + 8 * 3] ; port
+	mov rax, 0
 
 	in al, dx
 
-	pop edx
-	pop ebp
+	pop rdx
+	pop rbp
 ret
 
 ; int port, int data
 set_port_word:
-	push ebp
-	push edx
+	push rbp
+	push rdx
 
-	mov ebp, esp
+	mov rbp, rsp
 
-	mov eax, 0
+	mov rax, 0
 
-	mov edx, [ebp + 3 * 4 + 0 * 4] ; port
-	mov eax, [ebp + 3 * 4 + 1 * 4] ; data
+	mov rdx, [rbp + 8 * 3 + 8 * 0] ; port
+	mov rax, [rbp + 8 * 3 + 8 * 1] ; data
 
 	out dx, ax
 
-	pop edx
-	pop ebp
+	pop rdx
+	pop rbp
 ret
 
 %endif

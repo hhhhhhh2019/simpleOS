@@ -1,8 +1,6 @@
 %ifndef DISK
 %define DISK
 
-%include "src/include/port.asm"
-
 %define ATA_BASE 0x1f0
 %define ATA_CONTROL 0x3f4
 
@@ -19,102 +17,70 @@
 
 ; addr, count, buffer
 read_sector:
-	push ebp
-	push ecx
-
-	push dword [esp + 4 * 3 + 4 * 1]
-	push dword ATA_BASE + 2 ; sectors count
-	call set_port_byte
-	add esp, 4 * 2
-
-	
-	mov eax, [esp + 4 * 3 + 4 * 0] ; addr
-	
-	and eax, 0xff
-	push dword eax
-	push dword ATA_BASE + 3 ; lba
-	call set_port_byte
-	add esp, 4 * 2
+	push rbp
+	mov rbp, rsp
+	add rbp, 8 * 2
+	push rcx
+	push rdx
 
 
-	mov eax, [esp + 4 * 3 + 4 * 0] ; addr
-	
-	shr eax, 8
-	and eax, 0xff
-	push dword eax
-	push dword ATA_BASE + 4 ; lba
-	call set_port_byte
-	add esp, 4 * 2
+	mov rax, [rbp + 8 * 1] ; count
+	mov dx, ATA_BASE + 2
+	out dx, al
 
 
-	mov eax, [esp + 4 * 3 + 4 * 0] ; addr
-	
-	shr eax, 16
-	and eax, 0xff
-	push dword eax
-	push dword ATA_BASE + 5 ; lba
-	call set_port_byte
-	add esp, 4 * 2
+	mov rax, [rbp + 8 * 0] ; addr
+	mov dx, ATA_BASE + 3
+	out dx, al
 
-	
-	mov eax, [esp + 4 * 3 + 4 * 0] ; addr
+	mov rax, [rbp + 8 * 0] ; addr
+	shr rax, 8
+	mov dx, ATA_BASE + 4
+	out dx, al
 
-	shr eax, 24
-	and eax, 0x0f
-	or eax, 0xe0
-	push dword eax
-	push dword ATA_BASE + 6
-	call set_port_byte
-	add esp, 4 * 2 ; head & drive
-	
+	mov rax, [rbp + 8 * 0] ; addr
+	shr rax, 16
+	mov dx, ATA_BASE + 5
+	out dx, al
 
-	mov eax, IDE_CMD_READ
+	mov rax, [rbp + 8 * 0] ; addr
+	shr rax, 8
+	and al, 0x0f
+	or al, 0xe0
+	mov dx, ATA_BASE + 6
+	out dx, al
 
-	cmp dword [esp + 4 * 3 + 4 * 1], 1
-	je .label
+	mov dx, ATA_BASE + 7
+	mov al, IDE_CMD_READ
+	out dx, al
 
-	mov eax, IDE_CMD_RDMUL
-
-.label:
-	push dword eax
-	push dword ATA_BASE + 7
-	call set_port_byte
-	add esp, 4 * 2
-
-	
-.loop1:
-	push dword ATA_BASE + 7
-	call get_port_byte
-	add esp, 4
-
+.loop:
+	in al, dx
 	test al, 8
-	jz .loop1
-	
+	jz .loop
 
-	mov ebp, [esp + 4 * 3 + 4 * 2]
-	mov dword ecx, [esp + 4 * 3 + 4 * 1]
-	shl ecx, 8
-
-	push edx
+	mov rcx, [rbp + 8 * 1]
+	shl rcx, 8
+	mov rbp, [rbp + 8 * 2] ; buffer
 
 .read_loop:
 	mov dx, ATA_BASE
 	in ax, dx
-	
-	mov [ebp], al
-	mov [ebp + 1], ah
 
-	add ebp, 2
+	mov [rbp], al
+	mov [rbp + 1], ah
 
-	dec ecx
+	add rbp, 2
 
-	cmp ecx, 0
+	dec rcx
+
+	cmp rcx, 0
 	jne .read_loop
 
-	
-	pop edx
-	pop ecx
-	pop ebp
+
+	pop rdx
+	pop rcx
+	pop rbp
 ret
 
 %endif

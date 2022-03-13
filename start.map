@@ -1,0 +1,64 @@
+
+- NASM Map file ---------------------------------------------------------------
+
+Source file:  src/boot/start.asm
+Output file:  build/start.bin
+
+-- Program origin -------------------------------------------------------------
+
+00000500
+
+-- Sections (summary) ---------------------------------------------------------
+
+Vstart            Start             Stop              Length    Class     Name
+             500               500               886  00000386  progbits  .text
+
+-- Sections (detailed) --------------------------------------------------------
+
+---- Section .text ------------------------------------------------------------
+
+class:     progbits
+length:                 386
+start:                  500
+align:     not defined
+follows:   not defined
+vstart:                 500
+valign:    not defined
+vfollows:  not defined
+
+-- Symbols --------------------------------------------------------------------
+
+---- Section .text ------------------------------------------------------------
+
+Real              Virtual           Name
+             505               505  get_port_byte
+             517               517  set_port_byte
+             52D               52D  get_port_word
+             53F               53F  set_port_word
+             556               556  memcpy
+             56D               56D  memcpy.loop
+             585               585  memset
+             597               597  memset.loop
+             5AA               5AA  memset_word
+             5C0               5C0  memset_word.loop
+             5D5               5D5  print_char_at
+             60F               60F  print_char_at.new_line
+             617               617  print_char_at.return
+             626               626  print_char_at.end
+             629               629  print_at
+             649               649  print_at.loop
+             67A               67A  print_at.end
+             67E               67E  print
+             68C               68C  print.loop
+             6CC               6CC  print.end
+             6D0               6D0  clear_screen
+             6E8               6E8  get_offset
+             707               707  get_offset_row
+             721               721  get_offset_col
+             74E               74E  set_cursor_pos
+             7AF               7AF  get_cursor_pos
+             803               803  read_sector
+             851               851  read_sector.loop
+             862               862  read_sector.read_loop
+             87F               87F  start
+

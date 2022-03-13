@@ -1,347 +1,319 @@
-%ifndef SCREEN
-%define SCREEN
+%ifndef STRING
+%define STRING
 
 %include "src/include/port.asm"
 %include "src/include/util.asm"
 
 %define VIDEO_ADDRESS 0xb8000
-%define MAX_ROWS 25
-%define MAX_COLS 80
+%define MAX_ROWS 25 ; y
+%define MAX_COLS 80 ; x
 
 
-; char ch, char attr, int col, int row
+; char, attr, x, y
 print_char_at:
-	push ebp
-	push ebx
+	push rbp
+	mov rbp, rsp
+	add rbp, 8 * 2
+	push rbx
 
-	mov ebp, esp
+	push qword [rbp + 8 * 3] ; y
+	push qword [rbp + 8 * 2] ; x
+	call get_offset
+	add rsp, 8 * 2
 
-	mov bl, [ebp + 3 * 4 + 0 * 4] ; ch
-	mov bh, [ebp + 3 * 4 + 1 * 4] ; attr
-
-	push dword [ebp + 3 * 4 + 3 * 4] ; row
-	push dword [ebp + 3 * 4 + 2 * 4] ; col
-	call get_offset ; eax = offset
-	add esp, 4 * 2
+	mov bl, [rbp + 8 * 0]
+	mov bh, [rbp + 8 * 1]
 
 	cmp bl, 0x0a ; \n
-	je print_char_at_1
+	je .new_line
 
 	cmp bl, 0x0d ; \r
-	je print_char_at_2
+	je .return
 
-	jmp print_char_at_3 ; EOL
+	mov rbp, VIDEO_ADDRESS
+	add rbp, rax
 
-print_char_at_1:
-	add eax, MAX_COLS * 2
+	mov [rbp], bx
 
-	jmp print_char_at_end
+	add rax, 2
 
-print_char_at_2:
-	mov eax, [ebp + 3 * 4 + 3 * 4] ; row
+	jmp .end
 
-	mov ebx, MAX_COLS * 2
-	mul ebx
+.new_line:
+	add rax, MAX_COLS * 2
 
-	jmp print_char_at_end
+	jmp .end
 
-print_char_at_3:
-	mov ebp, VIDEO_ADDRESS
-	add ebp, eax
-	mov [ebp], bx
+.return:
+	mov rax, [rbp + 8 * 3]
+	mov rbx, MAX_COLS
+	mul rbx
+	shl rax, 1
 
-	add eax, 2
-
-print_char_at_end:
-	pop ebx
-	pop ebp
+.end:
+	pop rbx
+	pop rbp
 ret
 
-; char* str, char attr, int col, int row
+
+; str, attr, x, y
 print_at:
-	push ebp
-	push esi
-	push ebx
+	push rbp
+	mov rbp, rsp
+	add rbp, 8 * 2
+	push rbx
+	push rsi
 
-	mov ebp, esp
+	mov rsi, [rbp + 8 * 0] ; str
 
-	mov esi, [ebp + 4 * 4 + 0 * 4] ; *str
-
-	push dword [ebp + 4 * 4 + 3 * 4] ; row
-	push dword [ebp + 4 * 4 + 2 * 4] ; col
+	push qword [rbp + 8 * 3] ; y
+	push qword [rbp + 8 * 2] ; x
 	call get_offset
-	add esp, 4 * 2
+	add rsp, 8 * 2
 
-	mov ebx, eax
+	mov rbx, rax
 
-print_at_loop:
-	cmp byte [esi], 0
-	je print_at_end
+.loop:
+	cmp byte [rsi], 0
+	jz .end
 
-	push ebx
+	push rbx
 	call get_offset_row
-	add esp, 4
+	add rsp, 8
 
-	push eax
+	push rax
 
-	push ebx
+	push rbx
 	call get_offset_col
-	add esp, 4
+	add rsp, 8
 
-	push eax
+	push rax
 
-	push dword [ebp + 4 * 4 + 1 * 4] ; attr
-	push dword [esi] ; ch
+	push qword [rbp + 8 * 1] ; attr
+	push qword [rsi]
 	call print_char_at
-	add esp, 4 * 4
+	add rsp, 8 * 4
 
-	mov ebx, eax
-	inc esi
+	mov rbx, rax
+	inc rsi
 
-jmp print_at_loop
+	jmp .loop
 
-print_at_end:
-	pop ebx
-	pop esi
-	pop ebp
+.end:
+	pop rsi
+	pop rbx
+	pop rbp
 ret
 
 
-; char* str, char attr
+; str, attr
 print:
-	push ebp
-	push esi
-	push ebx
+	push rbp
+	mov rbp, rsp
+	add rbp, 8 * 2
+	push rbx
+	push rsi
 
-	mov ebp, esp
+	mov rsi, [rbp + 8 * 0] ; str
 
-	mov esi, [ebp + 4 * 4 + 0 * 4] ; *str
+.loop:
+	cmp byte [rsi], 0
+	jz .end
 
 	call get_cursor_pos
-	mov ebx, eax
+	mov rbx, rax
 
-print_loop:
-	cmp byte [esi], 0
-	je print_end
-
-	push ebx
+	push rbx
 	call get_offset_row
-	add esp, 4
+	add rsp, 8
 
-	push eax
+	push rax
 
-	push ebx
+	push rbx
 	call get_offset_col
-	add esp, 4
+	add rsp, 8
 
-	push eax
+	push rax
 
-	push dword [ebp + 4 * 4 + 1 * 4] ; attr
-	push dword [esi] ; ch
+	push qword [rbp + 8 * 1] ; attr
+	push qword [rsi]
 	call print_char_at
-	add esp, 4 * 4
+	add rsp, 8 * 4
 
-	mov ebx, eax
-	inc esi
+	push rax
+	call set_cursor_pos
+	add rsp, 8
 
-jmp print_loop
+	inc rsi
 
-print_end:
-	pop ebx
-	pop esi
-	pop ebp
+	jmp .loop
+
+.end:
+	pop rsi
+	pop rbx
+	pop rbp
 ret
 
 
-scroll_screen:
-	push ecx
-	push eax
-
-	mov ecx, 1
-
-scroll_screen_loop:
-	cmp ecx, MAX_ROWS - 1
-	je scroll_screen_end
-	; memcpy(VIDEO_ADDRESS + ecx * MAX_COLS * 2, VIDEO_ADDRESS + (ecx - 1) * MAX_COLS * 2, MAX_COLS * 2)
-
-	push dword MAX_COLS * 2 ; count
-
-	; VIDEO_ADDRESS + (ecx - 1) * MAX_COLS * 2
-	mov eax, MAX_ROWS * 2
-	push ecx
-	dec ecx
-	mul ecx
-	pop ecx
-	add eax, VIDEO_ADDRESS
-	push dword eax ; to
-
-	; VIDEO_ADDRESS + ecx * MAX_COLS * 2
-	mov eax, MAX_COLS * 2
-	mul ecx
-	add eax, VIDEO_ADDRESS
-	push dword eax; from
-
-	call memcpy
-	add esp, 4 * 3
-
-	inc ecx
-jmp scroll_screen_loop
-
-scroll_screen_end:
-	pop eax
-	pop ecx
+clear_screen:
+	push qword MAX_COLS * MAX_ROWS
+	push qword 0x0f00
+	push qword VIDEO_ADDRESS
+	call memset_word
+	pop rax
+	pop rax
+	pop rax
 ret
+
 
 
 ; int col, int row
 ; return (row * MAX_COLS + col) * 2
 get_offset:
-	push ebp
-	push ebx
+	push rbp
+	mov rbp, rsp
+	add rbp, 8 * 2
+	push rbx
 
-	mov ebp, esp
+	mov rax, [rbp + 8 * 1] ; row
+	mov rbx, MAX_COLS
+	mul rbx
 
-	mov eax, [ebp + 3 * 4 + 1 * 4] ; row
-	mov ebx, [ebp + 3 * 4 + 0 * 4] ; col
+	add rax, [rbp + 8 * 0] ; row
 
-	mov ebp, MAX_COLS
-	mul ebp
+	shl rax, 1
 
-	add eax, ebx
-
-	shl eax, 1
-
-	pop ebx
-	pop ebp
+	pop rbx
+	pop rbp
 ret
 
 
 ; int offset
 ; return offset / (MAX_COLS * 2)
 get_offset_row:
-	push ebp
+	push rbx
+	push rdx
 
-	mov ebp, esp
+	mov rax, [rsp + 8 * 3] ; offset
+	mov rdx, 0
 
-	mov eax, [ebp + 2 * 4 + 0] ; offset
+	mov rbx, MAX_COLS
+	shl rbx, 1
 
-	mov ebp, MAX_COLS * 2
+	div rbx
 
-	div ebp ; eax /= MAX_COLS * 2
-
-	mov eax, ebp
-
-	pop ebp
+	pop rdx
+	pop rbx
 ret
 
 ; int offset
 ; return (offset - get_offset_row(offset) * MAX_COLS * 2) / 2
 get_offset_col:
-	push ebp
-	push ebx
+	push rbp
+	push rbx
+	push rdx
 
-	mov ebp, esp
-
-	push dword [ebp + 3 * 4 + 0] ; offset
+	push qword [rsp + 8 * 4] ; offset
 	call get_offset_row
-	add esp, 4
+	add rsp, 8
 
-	mov ebx, MAX_COLS * 2
-	mul ebx
+	mov rbx, MAX_COLS
+	mul rbx
 
-	mov ebx, [ebp + 3 * 4 + 0] ; offset
-	sub ebx, eax ; offset - get_offset_row(offset) * MAX_COLS * 2
+	shl rax, 1
 
-	shr ebx, 1 ; offset /= 2
+	mov rbx, [rsp + 8 * 4] ; offset
+	sub rbx, rax
 
-	mov eax, ebx
+	shr rbx, 1
 
-	pop ebx
-	pop ebp
+	mov rax, rbx
+
+	pop rdx
+	pop rbx
+	pop rbp
 ret
 
 ; int offset
 set_cursor_pos:
-	push ebp
-	push ebx
+	push rbp
+	push rbx
 
-	mov ebp, esp
+	mov rbp, rsp
 
-	mov ebx, [ebp + 4 * 3 + 0] ; offset
+	mov rbx, [rbp + 8 * 3 + 0] ; offset
 
-	shr ebx, 1 ; effset /= 2
+	shr rbx, 1 ; offset /= 2
 
-	push ebx
+	push rbx
 
-	and ebx, 0xff
+	and rbx, 0xff
 
-	push dword 15
-	push dword REG_SCREEN_CTRL
+	push qword 0x0f
+	push qword 0x3d4
 	call set_port_byte
-	add esp, 8
+	add rsp, 8 * 2
 
-	push dword ebx
-	push dword REG_SCREEN_DATA
+	push qword rbx
+	push qword 0x3d5
 	call set_port_byte
-	add esp, 8
+	add rsp, 8 * 2
 
-	pop ebx
+	pop rbx
 
-	and ebx, 0xff00
+	and rbx, 0xff00
 
-	shr ebx, 8
+	shr rbx, 8
 
-	push dword 14
-	push dword REG_SCREEN_CTRL
+	push qword 0x0e
+	push qword 0x3d4
 	call set_port_byte
-	add esp, 8
+	add rsp, 8 * 2
 
-	push dword ebx
-	push dword REG_SCREEN_DATA
+	push qword rbx
+	push qword 0x3d5
 	call set_port_byte
-	add esp, 8
+	add rsp, 8 * 2
 
-	pop ebx
-	pop ebp
+	pop rbx
+	pop rbp
 ret
 
 
 get_cursor_pos:
-	push ebx
+	push rbx
 
-	mov ebx, 0
+	mov rbx, 0
 
-
-	push dword 15
-	push dword REG_SCREEN_CTRL
+	push qword 0x0f
+	push qword 0x3d4
 	call set_port_byte
-	add esp, 8
+	add rsp, 8 * 2
 
-	push dword REG_SCREEN_DATA
+	push qword 0x3d5
 	call get_port_byte
-	add esp, 4
+	add rsp, 8
 
-	mov ebx, eax
+	mov rbx, rax
 
-
-	push dword 14
-	push dword REG_SCREEN_CTRL
+	push qword 0x0e
+	push qword 0x3d4
 	call set_port_byte
-	add esp, 8
+	add rsp, 8 * 2
 
-	push dword REG_SCREEN_DATA
+	push qword 0x3d5
 	call get_port_byte
-	add esp, 4
+	add rsp, 8
 
-	shl eax, 8
-	add ebx, eax
+	shl rax, 8
+	add rbx, rax
 
-	mov eax, ebx
+	mov rax, rbx
 
-	shl eax, 1
+	shl rax, 1
 
-
-	pop ebx
+	pop rbx
 ret
+
 
 %endif
