@@ -84,4 +84,29 @@ memset_word:
 	pop rbp
 ret
 
+
+; addr, size
+init_hdt:
+	push rbx
+
+	mov rbx, [rsp + 8 * 2 + 8 * 0] ; addr
+	mov rax, rbx
+	add rax, 393216 + 4 + 4 + 2
+	mov dword [rbx], eax
+
+	mov rax, [rbp + 8 * 2 + 8 * 1] ; size
+
+	mov dword [rbx + 4], eax
+
+	mov word [rbx + 8], 0
+
+	pop rbx
+ret
+
+; *hdt, size
+malloc:
+
+ret
+
+
 %endif

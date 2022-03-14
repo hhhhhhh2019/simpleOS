@@ -11,14 +11,14 @@ Output file:  build/start.bin
 -- Sections (summary) ---------------------------------------------------------
 
 Vstart            Start             Stop              Length    Class     Name
-             500               500               886  00000386  progbits  .text
+             500               500               A4B  0000054B  progbits  .text
 
 -- Sections (detailed) --------------------------------------------------------
 
 ---- Section .text ------------------------------------------------------------
 
 class:     progbits
-length:                 386
+length:                 54B
 start:                  500
 align:     not defined
 follows:   not defined
@@ -28,37 +28,64 @@ vfollows:  not defined
 
 -- Symbols --------------------------------------------------------------------
 
+---- No Section ---------------------------------------------------------------
+
+Value     Name
+00000080  PRESENT
+00000010  NOT_SYS
+00000008  EXEC
+00000004  DC
+00000002  RW
+00000001  ACCESSED
+00000080  GRAN_4K
+00000040  SZ_32
+00000020  LONG_MODE
+00000000  GDT.Null
+00000008  GDT.Code
+00000010  GDT.Data
+00000018  GDT.TSS
+
+
 ---- Section .text ------------------------------------------------------------
 
 Real              Virtual           Name
-             505               505  get_port_byte
-             517               517  set_port_byte
-             52D               52D  get_port_word
-             53F               53F  set_port_word
-             556               556  memcpy
-             56D               56D  memcpy.loop
-             585               585  memset
-             597               597  memset.loop
-             5AA               5AA  memset_word
-             5C0               5C0  memset_word.loop
-             5D5               5D5  print_char_at
-             60F               60F  print_char_at.new_line
-             617               617  print_char_at.return
-             626               626  print_char_at.end
-             629               629  print_at
-             649               649  print_at.loop
-             67A               67A  print_at.end
-             67E               67E  print
-             68C               68C  print.loop
-             6CC               6CC  print.end
-             6D0               6D0  clear_screen
-             6E8               6E8  get_offset
-             707               707  get_offset_row
-             721               721  get_offset_col
-             74E               74E  set_cursor_pos
-             7AF               7AF  get_cursor_pos
-             803               803  read_sector
-             851               851  read_sector.loop
-             862               862  read_sector.read_loop
-             87F               87F  start
+             502               502  GDT
+             522               522  GDT.Pointer
+             52C               52C  init_64bit_mode
+             5B5               5B5  SetEntry
+             5F2               5F2  NoCPUID
+             61E               61E  NoLongMode
+             67B               67B  init64
+             696               696  get_port_byte
+             6A8               6A8  set_port_byte
+             6BE               6BE  get_port_word
+             6D0               6D0  set_port_word
+             6E7               6E7  memcpy
+             6FE               6FE  memcpy.loop
+             716               716  memset
+             728               728  memset.loop
+             73B               73B  memset_word
+             751               751  memset_word.loop
+             766               766  init_hdt
+             786               786  malloc
+             787               787  print_char_at
+             7C1               7C1  print_char_at.new_line
+             7C9               7C9  print_char_at.return
+             7D8               7D8  print_char_at.end
+             7DB               7DB  print_at
+             7FB               7FB  print_at.loop
+             82C               82C  print_at.end
+             830               830  print
+             83E               83E  print.loop
+             87E               87E  print.end
+             882               882  clear_screen
+             89A               89A  get_offset
+             8B9               8B9  get_offset_row
+             8D3               8D3  get_offset_col
+             900               900  set_cursor_pos
+             961               961  get_cursor_pos
+             9B5               9B5  read_sector
+             A03               A03  read_sector.loop
+             A14               A14  read_sector.read_loop
+             A31               A31  start
 

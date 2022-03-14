@@ -5,62 +5,62 @@
 
 ;char* str
 str_len:
-	push ebp
+	push rbp
 	
-	mov ebp, [esp + 4 * 2 + 0]
+	mov rbp, [rsp + 8 * 2 + 0]
 
-	mov eax, 0
+	mov rax, 0
 
 .loop:
-	cmp byte [ebp], 0
+	cmp byte [rbp], 0
 	je .end
 
-	inc eax
-	inc ebp
+	inc rax
+	inc rbp
 jmp .loop
 
 .end
-	pop ebp
+	pop rbp
 ret
 
 
 ; char* str1, char* str2, int count
-; 1 - ok, 0 - error
+; 1 - ok, 0 - rrror
 arr_cmp:
-	push ebp
-	push esi
-	  push ebx
+	push rbp
+	push rsi
+	push rbx
 
-	mov ebp, [esp + 4 * 4 + 4 * 0]
-	mov esi, [esp + 4 * 4 + 4 * 1]
-	mov eax, [esp + 4 * 4 + 4 * 2]
+	mov rbp, [rsp + 8 * 4 + 8 * 0]
+	mov rsi, [rsp + 8 * 4 + 8 * 1]
+	mov rax, [rsp + 8 * 4 + 8 * 2]
 
 .loop:
-	cmp eax, 0
+	cmp rax, 0
 	je .ok
 
-	mov byte bl, [ebp]
-	mov byte bh, [esi]
+	mov byte bl, [rbp]
+	mov byte bh, [rsi]
 
 	cmp bl, bh
 	jne .error
 
-	inc ebp
-	inc esi
-	dec eax
+	inc rbp
+	inc rsi
+	dec rax
 jmp .loop
 
 .ok:
-	mov eax, 1
+	mov rax, 1
 	jmp .end
 
 .error:
-	mov eax, 0
+	mov rax, 0
 
 .end:
-	  pop ebx
-	pop esi
-	pop ebp
+	  pop rbx
+	pop rsi
+	pop rbp
 ret
 
 
